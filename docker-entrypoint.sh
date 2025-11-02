@@ -31,7 +31,7 @@ if [ "$TABLE_COUNT" -lt 10 ]; then
   bundle exec rake db:migrate RAILS_ENV=production
   
   echo "=== Loading default data ==="
-  bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=fr
+  bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=en
 EOF
   echo "✓ Database initialized!"
 else
