@@ -2,7 +2,6 @@
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "bundle exec rails server -b 0.0.0.0 -p 3000 -e production"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
