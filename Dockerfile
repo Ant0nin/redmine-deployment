@@ -5,11 +5,15 @@ RUN apk add --no-cache \
     imagemagick \
     tzdata \
     git \
-    build-base
+    build-base \
+    postgresql-client
 
 # Configuration du fuseau horaire
 ENV TZ=Europe/Paris
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Copier la configuration database
+COPY config/database.yml /usr/src/redmine/config/database.yml
 
 # Configuration pour l'envoi d'emails (créez configuration.yml si nécessaire)
 # COPY configuration.yml /usr/src/redmine/config/

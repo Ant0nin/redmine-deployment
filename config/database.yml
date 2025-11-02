@@ -1,0 +1,9 @@
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  database: <%= ENV['REDMINE_DB_DATABASE'] %>
+  username: <%= ENV['REDMINE_DB_USERNAME'] %>
+  password: <%= ENV['REDMINE_DB_PASSWORD'] %>
+  host: <%= ENV['REDMINE_DB_POSTGRES'] %>
+  port: <%= ENV['REDMINE_DB_PORT'] || 5432 %>

@@ -1,6 +1,21 @@
 #!/bin/sh
 set -e
 
+echo "=========================================="
+echo "=== REDMINE ENTRYPOINT SCRIPT STARTED ==="
+echo "=========================================="
+echo "Current directory: $(pwd)"
+echo "User: $(whoami)"
+echo ""
+echo "Environment variables check:"
+echo "REDMINE_DB_POSTGRES: $REDMINE_DB_POSTGRES"
+echo "REDMINE_DB_PORT: $REDMINE_DB_PORT"
+echo "REDMINE_DB_DATABASE: $REDMINE_DB_DATABASE"
+echo "REDMINE_DB_USERNAME: $REDMINE_DB_USERNAME"
+echo "REDMINE_DB_PASSWORD: [HIDDEN]"
+echo "RAILS_ENV: $RAILS_ENV"
+echo "=========================================="
+
 # Attendre PostgreSQL
 echo "Waiting for PostgreSQL..."
 max_attempts=30
@@ -56,4 +71,7 @@ bundle exec rake assets:precompile
 bundle exec rake tmp:clear
 
 echo "Starting Redmine..."
-exec "$@"
+#exec "$@"
+cd /usr/src/redmine
+exec bundle exec rails server -b 0.0.0.0 -p "${PORT:-3000}" -e production
+
