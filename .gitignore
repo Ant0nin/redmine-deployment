@@ -1,0 +1,31 @@
+# Fichiers de configuration sensibles
+.env
+*.env
+.env.local
+.env.production
+*.secret
+
+# Logs
+*.log
+logs/
+log/
+
+# Fichiers systèmes
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Certificats SSL (si vous en générez localement)
+*.pem
+*.key
+*.crt
+*.csr
+ssl/

@@ -1,0 +1,56 @@
+# Configuration pour l'envoi d'emails via SMTP
+# Renommez ce fichier en configuration.yml et décommentez/modifiez selon vos besoins
+
+production:
+  # Configuration pour Gmail
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      enable_starttls_auto: true
+      address: "smtp.gmail.com"
+      port: 587
+      domain: "gmail.com"
+      authentication: :plain
+      user_name: "your-email@gmail.com"
+      password: "your-app-password"
+
+  # Configuration alternative pour un serveur SMTP local
+  # email_delivery:
+  #   delivery_method: :smtp
+  #   smtp_settings:
+  #     address: "localhost"
+  #     port: 25
+  #     domain: "example.com"
+
+  # Configuration pour SendGrid
+  # email_delivery:
+  #   delivery_method: :smtp
+  #   smtp_settings:
+  #     enable_starttls_auto: true
+  #     address: "smtp.sendgrid.net"
+  #     port: 587
+  #     domain: "your-domain.com"
+  #     authentication: :plain
+  #     user_name: "apikey"
+  #     password: "your-sendgrid-api-key"
+
+  # Autres configurations Redmine
+  attachments_storage_path:
+  autologin_cookie_name:
+  autologin_cookie_path:
+  autologin_cookie_secure:
+  scm_subversion_command:
+  scm_mercurial_command:
+  scm_git_command:
+  scm_cvs_command:
+  scm_bazaar_command:
+  scm_darcs_command:
+
+development:
+  # Configuration pour le développement
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      address: "localhost"
+      port: 1025
+      domain: "example.com"

@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: redmine-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-redmine}
+      POSTGRES_USER: ${POSTGRES_USER:-redmine}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - redmine-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redmine}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redmine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: redmine-app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      REDMINE_DB_POSTGRES: postgres
+      REDMINE_DB_DATABASE: ${POSTGRES_DB:-redmine}
+      REDMINE_DB_USERNAME: ${POSTGRES_USER:-redmine}
+      REDMINE_DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      REDMINE_SECRET_KEY_BASE: ${REDMINE_SECRET_KEY:-changeme_in_production}
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+    volumes:
+      - redmine_files:/usr/src/redmine/files
+      - redmine_plugins:/usr/src/redmine/plugins
+      - redmine_themes:/usr/src/redmine/public/themes
+      - ./configuration.yml:/usr/src/redmine/config/configuration.yml:ro
+    networks:
+      - redmine-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  nginx:
+    image: nginx:alpine
+    container_name: redmine-nginx
+    restart: always
+    depends_on:
+      redmine:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - redmine-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  redmine_files:
+    driver: local
+  redmine_plugins:
+    driver: local
+  redmine_themes:
+    driver: local
+  nginx_cache:
+    driver: local
+
+networks:
+  redmine-network:
+    driver: bridge

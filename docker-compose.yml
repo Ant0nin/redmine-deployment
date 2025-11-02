@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: redmine-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-redmine}
+      POSTGRES_USER: ${POSTGRES_USER:-redmine}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - redmine-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redmine}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redmine:
+    image: redmine:5.1-alpine
+    container_name: redmine-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${REDMINE_PORT:-3000}:3000"
+    environment:
+      REDMINE_DB_POSTGRES: postgres
+      REDMINE_DB_DATABASE: ${POSTGRES_DB:-redmine}
+      REDMINE_DB_USERNAME: ${POSTGRES_USER:-redmine}
+      REDMINE_DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      REDMINE_SECRET_KEY_BASE: ${REDMINE_SECRET_KEY:-changeme_in_production}
+      # Configuration supplémentaire
+      REDMINE_NO_DB_MIGRATE: "false"
+      RAILS_MIGRATE: "true"
+    volumes:
+      - redmine_files:/usr/src/redmine/files
+      - redmine_plugins:/usr/src/redmine/plugins
+      - redmine_themes:/usr/src/redmine/public/themes
+    networks:
+      - redmine-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    driver: local
+  redmine_files:
+    driver: local
+  redmine_plugins:
+    driver: local
+  redmine_themes:
+    driver: local
+
+networks:
+  redmine-network:
+    driver: bridge
