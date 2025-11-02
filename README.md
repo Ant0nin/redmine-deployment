@@ -169,6 +169,12 @@ tar xzf themes_20240101.tar.gz
 ## 🛠️ Commandes utiles
 
 ```bash
+# Exécuter les migrations de la BDD
+docker exec -it redmine-app bundle exec rake db:migrate RAILS_ENV=production
+
+# Charger les données par défaut de Redmine (création des tables dans la BDD)
+docker exec -it redmine-app bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=en
+
 # Voir les logs
 docker-compose logs -f redmine
 
