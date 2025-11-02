@@ -63,9 +63,9 @@ if [ -z "$REDMINE_SECRET_KEY_BASE" ]; then
   echo "Generated secret key base"
 fi
 
-# Compiler les assets
-echo "Compiling assets..."
-bundle exec rake assets:precompile
+# # Compiler les assets
+# echo "Compiling assets..."
+# bundle exec rake assets:precompile
 
 # Nettoyer le cache
 bundle exec rake tmp:clear
