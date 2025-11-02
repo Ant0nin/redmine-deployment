@@ -11,10 +11,6 @@ RUN apk add --no-cache \
 ENV TZ=Europe/Paris
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Installation de gems additionnelles (optionnel)
-RUN echo "gem 'unicorn'" >> Gemfile.local && \
-    bundle install --without development test
-
 # Configuration pour l'envoi d'emails (créez configuration.yml si nécessaire)
 # COPY configuration.yml /usr/src/redmine/config/
 
