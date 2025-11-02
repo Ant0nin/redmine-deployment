@@ -1,27 +1,41 @@
 #!/bin/sh
 set -e
 
-# Attendre que la base de données soit prête
-echo "Waiting for database..."
-until PGPASSWORD=$REDMINE_DB_PASSWORD psql -h "$REDMINE_DB_POSTGRES" -U "$REDMINE_DB_USERNAME" -d "$REDMINE_DB_DATABASE" -c '\q' 2>/dev/null; do
-  echo "PostgreSQL is unavailable - sleeping"
+# Attendre PostgreSQL
+echo "Waiting for PostgreSQL..."
+max_attempts=30
+attempt=0
+
+until PGPASSWORD=$REDMINE_DB_PASSWORD psql -h "$REDMINE_DB_POSTGRES" -p "${REDMINE_DB_PORT:-5432}" -U "$REDMINE_DB_USERNAME" -d "$REDMINE_DB_DATABASE" -c '\q' 2>/dev/null; do
+  attempt=$((attempt + 1))
+  if [ $attempt -eq $max_attempts ]; then
+    echo "❌ Could not connect to PostgreSQL after $max_attempts attempts"
+    exit 1
+  fi
+  echo "PostgreSQL is unavailable - sleeping (attempt $attempt/$max_attempts)"
   sleep 2
 done
 
-echo "Database is ready!"
+echo "✓ PostgreSQL is ready!"
 
 # Créer la base de données si elle n'existe pas
 bundle exec rake db:create 2>/dev/null || true
 
-# Exécuter les migrations
-echo "Running database migrations..."
-bundle exec rake db:migrate RAILS_ENV=production
+# Vérifier si la base est initialisée
+TABLE_COUNT=$(PGPASSWORD=$REDMINE_DB_PASSWORD psql -h "$REDMINE_DB_POSTGRES" -p "${REDMINE_DB_PORT:-5432}" -U "$REDMINE_DB_USERNAME" -d "$REDMINE_DB_DATABASE" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ' || echo "0")
 
-# Charger les données par défaut si c'est la première installation
-if [ ! -f /usr/src/redmine/files/.initialized ]; then
-  echo "Loading default data..."
-  bundle exec rake redmine:load_default_data REDMINE_LANG=en RAILS_ENV=production || true
-  touch /usr/src/redmine/files/.initialized
+echo "Found $TABLE_COUNT tables in database"
+
+if [ "$TABLE_COUNT" -lt 10 ]; then
+  echo "=== Running database migrations ==="
+  bundle exec rake db:migrate RAILS_ENV=production
+  
+  echo "=== Loading default data ==="
+  bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=fr
+EOF
+  echo "✓ Database initialized!"
+else
+  echo "✓ Database already initialized with $TABLE_COUNT tables"
 fi
 
 # Installer les plugins
