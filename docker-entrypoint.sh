@@ -41,10 +41,11 @@ TABLE_COUNT=$(PGPASSWORD=$REDMINE_DB_PASSWORD psql -h "$REDMINE_DB_POSTGRES" -p 
 
 echo "Found $TABLE_COUNT tables in database"
 
+# Appliquer les migrations de la base de données
+echo "=== Running database migrations ==="
+bundle exec rake db:migrate RAILS_ENV=production
+
 if [ "$TABLE_COUNT" -lt 10 ]; then
-  echo "=== Running database migrations ==="
-  bundle exec rake db:migrate RAILS_ENV=production
-  
   echo "=== Loading default data ==="
   bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=en
 EOF
